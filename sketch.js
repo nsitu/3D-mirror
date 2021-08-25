@@ -42,8 +42,8 @@ let drama = 1.5
 let ready = false
 
 preload = () => {
-  displayObject = loadModel('assets/rocks.obj', true)
-  objectTexture = loadImage('assets/rocks.jpg')
+  displayObject = loadModel('rocks.obj', true)
+  objectTexture = loadImage('rocks.jpg')
 }
 
 setup = () => { 
