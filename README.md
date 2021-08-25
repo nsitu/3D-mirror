@@ -1,4 +1,4 @@
-# 3D Mirror - by Harold Sikkema
+# 3D Mirror
 Track the user's head movements with ML5 / facemesh and mirror them onto a textured 3D mesh with p5js and WebGL
 
 # Overview
