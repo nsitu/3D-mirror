@@ -1,0 +1,19 @@
+html, body { 
+    height: 100%;  
+    margin: 0; 
+}
+body { 
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    background: #ee9988;
+    background-image: url(loader.gif);
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+}
+canvas { 
+    display: block;    
+}
+#p5_loading{
+    display:none;
+}
