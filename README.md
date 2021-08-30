@@ -1,6 +1,11 @@
 # 3D Mirror
 Track the user's head movements with ML5 / facemesh and mirror them onto a textured 3D mesh with p5js and WebGL
 
+# Demo
+[nsitu.ca/3dmirror](https://nsitu.ca/3dmirror)
+
+
+
 # Overview
 - Made with p5js, WebGL, and ml5
 - Inspiration via a 2020 project by Rowan Abraham & Arash Nouri (thank you!)
