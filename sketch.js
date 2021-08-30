@@ -7,15 +7,6 @@
 -Tracks XYZ rotation of user's face via webcam and ML5 facemesh 
 -Maps user's head movements onto 3D mesh
 
-While hiking in Ontario I encounter landmarks of stacked stones marking the way.
-They remind me that I share the trail (and the land itself) with others:
-those who came before and those who will follow after.
-In particular they invite an awareness of inuksuk and innunguaq as enduring Inuit symbols.
-
-“We are happy that others appreciate our symbols but we do not want the meaning taken out of our symbols. 
-Inuit have used the inuksuk for survival and assign a lot of value to its preservation”
--Piita Taqtu Irniq
-
 I have found the "mirror" logic of this sketch to be provocative and surprising. 
 It has led me to be more curious about my relationship with the world around me.
 I invite you to adapt the code for your own explorations.
@@ -42,8 +33,8 @@ let drama = 1.5
 let ready = false
 
 preload = () => {
-  displayObject = loadModel('rocks.obj', true)
-  objectTexture = loadImage('rocks.jpg')
+  displayObject = loadModel('shell.obj', true)
+  objectTexture = loadImage('shell.jpg')
 }
 
 setup = () => { 
@@ -117,6 +108,9 @@ windowResized = () => {
 modelReady = () => {
   console.log("Facemesh Model ready!")
 }
+
+// The below approach to head rotation along XYZ axis (Yaw, Pitch, Roll) is adapted from @akhirai560
+// See also: https://github.com/tensorflow/tfjs/issues/3835#issuecomment-792465923
 
 headNod = () => { 
   const yMidPoint = [ 0, (forehead[1] + chin[1]) * 0.5, (forehead[2] + chin[2]) * 0.5 ]
