@@ -38,15 +38,22 @@ preload = () => {
 }
 
 setup = () => { 
-  theCanvas = createCanvas(windowWidth, windowHeight, WEBGL)
-  theCanvas.hide()
-  cam = createCapture(VIDEO)
-  cam.hide() 
-  facemesh = ml5.facemesh(cam, modelReady)
-  facemesh.on("predict", data => { predictions = data }) 
-  normalMaterial() // a material not affected by light
-  strokeWeight(2) 
-  fill(255, 0, 0, 0)
+  if (window.frameElement){
+    document.querySelector('#TabNotice').style.display = "block"
+  }
+  else{
+    document.querySelector('body').style.backgroundImage ="url(load.gif)"
+    theCanvas = createCanvas(windowWidth, windowHeight, WEBGL)
+    theCanvas.hide()
+    cam = createCapture(VIDEO)
+    cam.hide() 
+    facemesh = ml5.facemesh(cam, modelReady)
+    facemesh.on("predict", data => { predictions = data }) 
+    normalMaterial() // a material not affected by light
+    strokeWeight(2) 
+    fill(255, 0, 0, 0)
+  }
+
 }
 
 draw = () => {
@@ -68,8 +75,7 @@ draw = () => {
 
 initialize = () => {
   theCanvas.show()
-  const bgStyle = 'background-image: none; background-color: #afdda3';
-  document.getElementsByTagName("body")[0].style = bgStyle
+  document.querySelector('body').style.background = '#afdda3';
   ready = true;
 }
 

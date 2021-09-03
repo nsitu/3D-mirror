@@ -6,8 +6,8 @@ body {
     display: flex;
     align-items: center;
     justify-items: center;
-    background: #ee9988;
-    background-image: url(loader.gif);
+    text-align: center;
+    font-family: sans-serif;
     background-repeat: no-repeat;
     background-position: 50% 50%;
 }
@@ -16,4 +16,25 @@ canvas {
 }
 #p5_loading{
     display:none;
+}
+ 
+
+#TabNotice{
+  width: 100%;
+} 
+p{
+  margin: 2rem auto;
+}
+a {
+  color: #000;
+  text-decoration: underline;
+  cursor: pointer;
+}
+a.button{
+  margin: 10px auto;
+  padding: 10px 20px;
+  border-radius: 10px;
+  background: green;
+  text-decoration: none;
+  color: #ffffff;
 }

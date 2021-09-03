@@ -9,6 +9,19 @@
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>   
+      <!-- The sketch is best viewed full-screen (i.e. not embedded in an iframe)
+    Therefore we add a launch button to open a new browser tab.
+    The below div hides by default, but appears when an iframe is detected. -->
+  <div id="TabNotice" style="display:none;">
+    <h2>3D Mirror</h2>
+    <p>For best experience, please 
+      <a onclick="window.open(window.location, '_blank')">open a new tab</a>
+    </p>
+    <p>
+      <a class="button" onclick="window.open(window.location, '_blank')">Launch</a>
+    </p>
+  </div>
+
     <script src="sketch.js"></script>
   </body>
 </html>
