@@ -1,6 +1,6 @@
 /* =======================
 
-3D Mirror - by Harold Sikkema
+3D Mirror - by Harold Sikkema harold.sikkema@sheridancollege.ca
 -Made with p5js, WebGL, and ml5
 -Inspiration via a 2020 project by Rowan Abraham & Arash Nouri (thank you!)
 -Displays a textured 3D mesh with p5js and WebGL
@@ -19,8 +19,8 @@ let facemesh  // we will load the facemesh library into this variable.
 let faces = []        // This is where FaceMesh will store the faces that it finds
 let keypoints = []    // FaceMesh will store hundreds of facial landmarks here. 
 
-// Of the hundreds of keypoints provided by FaceMesh we really only need four:
-// With a baseline of forehead, chin, and eyes we can calculate all the angles we need. 
+// Of the hundreds of keypoints provided by FaceMesh we really only need five:
+// With a baseline of forehead, chin, eyes, nose we can calculate all the angles we need. 
 let forehead 
 let chin
 let leftEye 
@@ -29,7 +29,7 @@ let nose
 
 let displayObject   // a variable to hold our 3D model
 let objectTexture   // a variable to hold an image texture for our 3D model
-let drama = 1.5     // this is a multiplier that adds dramatic effect throughout the sketch
+let drama = 1.8     // this is a multiplier that adds dramatic effect throughout the sketch
 
 let ready = false   // use this variable to track if facemesh is ready (it takes a while to load)
 
@@ -41,7 +41,6 @@ preload = () => {
 }
 
 setup = () => { 
-
   // If we are inside an iFrame, that's not ideal.
   // in this case we show a notice to recommend opening a separate tab
   if (window.frameElement){
@@ -78,14 +77,14 @@ draw = () => {
     headNod()
     headTilt()  
     calibrate()
-    texture(objectTexture);
-    model(displayObject);
+    texture(objectTexture)
+    model(displayObject)
   }
 }
 
 // turn off the loading animation by updating the background style
 initialize = () => {
-  document.querySelector('body').style.background = '#afdda3';
+  document.querySelector('body').style.background = '#afdda3'
   ready = true;
 }
 
@@ -96,6 +95,7 @@ initialize = () => {
 updateKeypoints = () => {
   if (keypoints.length){
     for (let i=0; i < faces[0].scaledMesh.length; i++ ){
+      // 0, 1, and 2 correspond to X Y Z 
       keypoints[i][0] = lerp(keypoints[i][0], faces[0].scaledMesh[i][0], 0.5)
       keypoints[i][1] = lerp(keypoints[i][1], faces[0].scaledMesh[i][1], 0.5)
       keypoints[i][2] = lerp(keypoints[i][2], faces[0].scaledMesh[i][2], 0.5)
@@ -161,7 +161,11 @@ headScale = () => {
 
 // This axis correlates with shaking your head "no"
 headShake = () => {
-  const xMidPoint = [ (leftEye[0] + rightEye[0]) * 0.5, 0, (leftEye[2] + rightEye[2]) * 0.5 ]
+  const xMidPoint = [ 
+      (leftEye[0] + rightEye[0]) * 0.5, 
+      0, 
+      (leftEye[2] + rightEye[2]) * 0.5 
+  ]
   const xAdjacent = leftEye[2] - xMidPoint[2]
   const xOpposite = leftEye[0] - xMidPoint[0]
   const xHypotenuse =  Math.sqrt( Math.pow(xAdjacent,2) + Math.pow(xOpposite,2) )
