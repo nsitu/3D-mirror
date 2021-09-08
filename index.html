@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>3D Mirror</title>  
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <!-- We are including ML5 because it gives us easy access to FaceMesh -->
     <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
     <link rel="stylesheet" href="styles.css">
   </head>
@@ -21,7 +23,7 @@
       <a class="button" onclick="window.open(window.location, '_blank')">Launch</a>
     </p>
   </div>
-
+<!-- The following line loads sketch.js, where all the action is!  -->
     <script src="sketch.js"></script>
   </body>
 </html>

@@ -13,97 +13,120 @@ I invite you to adapt the code for your own explorations.
 
 ========================*/
 
-let cam;
-let facemesh;
+let webcam       // the webcam will be loaded into this variable. 
+let facemesh  // we will load the facemesh library into this variable.
 
-let predictions = []
-let keypoints = []
-// See also:
-// https://raw.githubusercontent.com/tensorflow/tfjs-models/master/facemesh/mesh_map.jpg
+let faces = []        // This is where FaceMesh will store the faces that it finds
+let keypoints = []    // FaceMesh will store hundreds of facial landmarks here. 
 
+// Of the hundreds of keypoints provided by FaceMesh we really only need four:
+// With a baseline of forehead, chin, and eyes we can calculate all the angles we need. 
 let forehead 
 let chin
 let leftEye 
 let rightEye
+let nose
 
-let displayObject
-let objectTexture
-let drama = 1.5
+let displayObject   // a variable to hold our 3D model
+let objectTexture   // a variable to hold an image texture for our 3D model
+let drama = 1.5     // this is a multiplier that adds dramatic effect throughout the sketch
 
-let ready = false
+let ready = false   // use this variable to track if facemesh is ready (it takes a while to load)
 
+// This model was 3D scanned from an actual shell with Agisoft Metashape 
+// See also: https://p5js.org/reference/#/p5/loadModel
 preload = () => {
   displayObject = loadModel('shell.obj', true)
   objectTexture = loadImage('shell.jpg')
 }
 
 setup = () => { 
+
+  // If we are inside an iFrame, that's not ideal.
+  // in this case we show a notice to recommend opening a separate tab
   if (window.frameElement){
     document.querySelector('#TabNotice').style.display = "block"
   }
+  // The code below only runs if we have a dedicated window.
   else{
+    // display a loading image on the page during setup
     document.querySelector('body').style.backgroundImage ="url(load.gif)"
+
+    // a WEBGL canvas is needed to make 3D models.
     theCanvas = createCanvas(windowWidth, windowHeight, WEBGL)
-    theCanvas.hide()
-    cam = createCapture(VIDEO)
-    cam.hide() 
-    facemesh = ml5.facemesh(cam, modelReady)
-    facemesh.on("predict", data => { predictions = data }) 
+    // Get a video feed from the webcam.
+    webcam = createCapture(VIDEO)
+    webcam.hide() 
+    facemesh = ml5.facemesh(webcam, modelReady)
+    facemesh.on("predict", data => { faces = data }) 
     normalMaterial() // a material not affected by light
-    strokeWeight(2) 
-    fill(255, 0, 0, 0)
+    noStroke()
   }
 
 }
 
+// The draw loop is really a list of other functions that you can find below
 draw = () => {
   clear()  
-  if (predictions.length){
+  if (faces.length){
     if (!ready) { initialize() }
     updateKeypoints()
-    //drawMesh()
+    //drawFaceMesh()
+    headPosition()  
     headScale()
     headShake()
     headNod()
     headTilt()  
-    rotateX(PI); // flip default p5js orientation
+    calibrate()
     texture(objectTexture);
     model(displayObject);
   }
 }
 
-
+// turn off the loading animation by updating the background style
 initialize = () => {
-  theCanvas.show()
   document.querySelector('body').style.background = '#afdda3';
   ready = true;
 }
 
+// Here we get the latest data from FaceMesh and average it with the previous frame
+// We use Linear Interpolation to do this. 
+// See also: https://p5js.org/reference/#/p5/lerp
+// Lerp causes outlier data to be smoothed out, and the animation as well
 updateKeypoints = () => {
   if (keypoints.length){
-    for (let i=0; i < predictions[0].scaledMesh.length; i++ ){
-      keypoints[i][0] = lerp(keypoints[i][0], predictions[0].scaledMesh[i][0], 0.5)
-      keypoints[i][1] = lerp(keypoints[i][1], predictions[0].scaledMesh[i][1], 0.5)
-      keypoints[i][2] = lerp(keypoints[i][2], predictions[0].scaledMesh[i][2], 0.5)
+    for (let i=0; i < faces[0].scaledMesh.length; i++ ){
+      keypoints[i][0] = lerp(keypoints[i][0], faces[0].scaledMesh[i][0], 0.5)
+      keypoints[i][1] = lerp(keypoints[i][1], faces[0].scaledMesh[i][1], 0.5)
+      keypoints[i][2] = lerp(keypoints[i][2], faces[0].scaledMesh[i][2], 0.5)
     }
   }
   else{
-    keypoints = predictions[0].scaledMesh
+    // the first time 
+     keypoints = faces[0].scaledMesh
   }
+
+  // These points of interest correspond to numbers on the full FaceMesh map:
+  // https://raw.githubusercontent.com/tensorflow/tfjs-models/master/facemesh/mesh_map.jpg
+  nose = keypoints[1]
   forehead = keypoints[10]
   chin = keypoints[152]
   leftEye = keypoints[226]
   rightEye = keypoints[446]
+  
 }
 
-drawMesh = () => {
-  for (let j = 0; j < keypoints.length; j += 1) {
-    const [x, y] = keypoints[j]       
-    translate(75,-350) 
-    scale(-0.25, 0.25);
-    ellipse(x, y, 5, 5)
-    scale(-4, 4);
-    translate(-75,350) 
+// Display all the points in the mesh for reference. 
+// Points are offset and scaled down to allow more space for the 3D model. 
+drawFaceMesh = () => {
+  for (i in keypoints) {
+    let [x, y] = keypoints[i]   
+    push()    
+      translate(150,-350) 
+      scale(-0.5, 0.5)
+      fill(86, 117, 78)  // dark green
+      ellipse(x, y, 5, 5)
+    pop() 
   }
 }
 
@@ -115,31 +138,10 @@ modelReady = () => {
   console.log("Facemesh Model ready!")
 }
 
-// The below approach to head rotation along XYZ axis (Yaw, Pitch, Roll) is adapted from @akhirai560
-// See also: https://github.com/tensorflow/tfjs/issues/3835#issuecomment-792465923
-
-headNod = () => { 
-  const yMidPoint = [ 0, (forehead[1] + chin[1]) * 0.5, (forehead[2] + chin[2]) * 0.5 ]
-  const yAdjacent = forehead[2] - yMidPoint[2]
-  const yOpposite = forehead[1] - yMidPoint[1]
-  const yHypotenuse =  Math.sqrt( Math.pow(yAdjacent,2) + Math.pow(yOpposite,2) )
-  rotateX( yAdjacent / yHypotenuse * drama) // yCos
-}
-
-headShake = () => {
-  const xMidPoint = [ (leftEye[0] + rightEye[0]) * 0.5, 0, (leftEye[2] + rightEye[2]) * 0.5 ]
-  const xAdjacent = leftEye[2] - xMidPoint[2]
-  const xOpposite = leftEye[0] - xMidPoint[0]
-  const xHypotenuse =  Math.sqrt( Math.pow(xAdjacent,2) + Math.pow(xOpposite,2) )
-  rotateY( xAdjacent / xHypotenuse * drama) // xCos
-}
-
-headTilt = () => {
-  const zMidPoint = [ (forehead[0] + chin[0]) * 0.5, (forehead[1] + chin[1]) * 0.5, 0 ]
-  const zAdjacent = forehead[0] - zMidPoint[0]
-  const zOpposite = forehead[1] - zMidPoint[1]
-  const zHypotenuse =  Math.sqrt( Math.pow(zAdjacent,2) + Math.pow(zOpposite,2) )
-  rotateZ( - zAdjacent / zHypotenuse * drama) // zCos
+headPosition = () => {
+  const translateX = map(nose[0], 0, webcam.width, -width/2, width/2)
+  const translateY = map(nose[1], 0, webcam.height, -height/2, height/2)
+  translate(-translateX , translateY)
 }
 
 headScale = () => {
@@ -148,4 +150,46 @@ headScale = () => {
   const yScale = map(yDistance,0,600,0,3)
   const xScale = map(xDistance,0,400,0,3)
   scale( (yScale + xScale) / 2  * drama)
+}
+
+// In this sketch, head rotation is tracked along 3 axes. 
+// In the language of aerospace you might call this "Yaw", "Pitch", and "Roll"
+// For ease of understanding I have called them "headNod", "headShake", and "headTilt"
+
+// The below approach to head rotation along the XYZ axes is adapted from @akhirai560
+// See also: https://github.com/tensorflow/tfjs/issues/3835#issuecomment-792465923
+
+// This axis correlates with shaking your head "no"
+headShake = () => {
+  const xMidPoint = [ (leftEye[0] + rightEye[0]) * 0.5, 0, (leftEye[2] + rightEye[2]) * 0.5 ]
+  const xAdjacent = leftEye[2] - xMidPoint[2]
+  const xOpposite = leftEye[0] - xMidPoint[0]
+  const xHypotenuse =  Math.sqrt( Math.pow(xAdjacent,2) + Math.pow(xOpposite,2) )
+  rotateY( xAdjacent / xHypotenuse * drama) 
+}
+
+// This axis correlates with nodding your head "yes" 
+headNod = () => { 
+  const yMidPoint = [ 0, (forehead[1] + chin[1]) * 0.5, (forehead[2] + chin[2]) * 0.5 ]
+  const yAdjacent = forehead[2] - yMidPoint[2]
+  const yOpposite = forehead[1] - yMidPoint[1]
+  const yHypotenuse =  Math.sqrt( Math.pow(yAdjacent,2) + Math.pow(yOpposite,2) )
+  rotateX( yAdjacent / yHypotenuse * drama) 
+}
+
+// Head tilt is the least predictable metric here due to a 45 degree limit in the FaceMesh model
+// See also: https://mediapipe.page.link/facemesh-mc
+headTilt = () => {
+  const zMidPoint = [ (forehead[0] + chin[0]) * 0.5, (forehead[1] + chin[1]) * 0.5, 0 ]
+  const zAdjacent = forehead[0] - zMidPoint[0]
+  const zOpposite = forehead[1] - zMidPoint[1]
+  const zHypotenuse =  Math.sqrt( Math.pow(zAdjacent,2) + Math.pow(zOpposite,2) )
+  rotateZ( - zAdjacent / zHypotenuse * drama) 
+}
+
+// If your model is facing the wrong way You might like to adjust the orientation manually
+// Thus, a calibrate function as a convenient place to do this. 
+// rotation is given in Radians; if you want to work in degrees, you'll need to convert first.
+calibrate = () => {
+  rotateX(PI)
 }
